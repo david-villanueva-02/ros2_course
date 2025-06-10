@@ -16,6 +16,9 @@ class BatteryNode(Node):
         # Timer
         self.main_timer = self.create_timer(10, self.timer_callback)
 
+        #test 2
+        self.test = 2
+
     def timer_callback(self):
         self.get_logger().info("Tic-tac")
         initial = time()
