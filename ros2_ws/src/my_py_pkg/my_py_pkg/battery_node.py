@@ -16,7 +16,7 @@ class BatteryNode(Node):
         # Timer
         self.main_timer = self.create_timer(10, self.timer_callback)
 
-        #test 2
+        #test 1
         self.test = 2
 
     def timer_callback(self):
