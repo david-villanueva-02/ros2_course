@@ -8,9 +8,11 @@ from launch.substitutions import Command, LaunchConfiguration
 
 def generate_launch_description():
 
+    bumperbot_description_dir = get_package_share_directory("bumperbot_description")
+
     model_arg = DeclareLaunchArgument(
         name = "model",
-        default_value = os.path.join(get_package_share_directory("bumperbot_description"), "urdf", "bumperbot.urdf.xacro"),
+        default_value = os.path.join(bumperbot_description_dir, "urdf", "bumperbot.urdf.xacro"),
         description = "Absolute path to robot URDF file"
     )
 
@@ -32,7 +34,7 @@ def generate_launch_description():
         executable = "rviz2",
         name = "rviz2",
         output = "screen",
-        arguments=["-d", os.path.join(get_package_share_directory("bumperbot_description"), "rviz", "display.rviz")]
+        arguments=["-d", os.path.join(bumperbot_description_dir, "rviz", "display.rviz")]
     )
 
     return LaunchDescription([
