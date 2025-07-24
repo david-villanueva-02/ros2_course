@@ -3,12 +3,23 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="bumperbot">
     <link name="base_footprint"/>
     <link name="base_link">
+        <inertial>
+            <origin xyz="0.0 0.0 0.04" rpy="0.0 0.25 0.3"/>
+            <mass value="8.2573504e-01"/>
+            <inertia ixx="2.2124416e-02" ixy="-1.2294101e-04" ixz="3.4938785e-04" iyy="2.1193702e-02" iyz="-5.0120904e-05" izz="2.0064271e-02"/>
+        </inertial>
         <visual>
             <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
             <geometry>
                 <mesh filename="package://bumperbot_description/meshes/base_link.STL"/>
             </geometry>
         </visual>
+        <collision>
+            <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+            <geometry>
+                <mesh filename="package://bumperbot_description/meshes/base_link.STL"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="base_joint" type="fixed">
@@ -18,12 +29,23 @@
     </joint>
 
     <link name="wheel_right_link">
+        <inertial>
+            <origin xyz="0.0 -0.014 0.0" rpy="0.0 0.0 0.0"/>
+            <mass value="0.0530086090966721"/>
+            <inertia ixx="1.88176298336665E-05" ixy="-4.8444933029987E-10" ixz="1.88163708851143E-08" iyy="3.11510738647764E-05" iyz="-6.9356066306907E-11" izz="1.8809969558182E-05"/>
+        </inertial>
         <visual>
             <origin rpy="1.57 0.0 0.0" xyz="0.0 0.0 0.0"/>
             <geometry>
                 <mesh filename="package://bumperbot_description/meshes/wheel_right_link.STL"/>
             </geometry>
         </visual>
+        <collision>
+            <origin xyz="0 -0.015 0.0" rpy="1.57 0.0 0.0"/>
+            <geometry>
+                <sphere radius="0.033"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="wheel_right_joint" type="continuous">
@@ -34,12 +56,23 @@
     </joint>
 
     <link name="wheel_left_link">
+        <inertial>
+            <origin xyz="0.0 0.014 0.0" rpy="0.0 0.0 0.0"/>
+            <mass value="0.0530086090966721"/>
+            <inertia ixx="1.88176298336665E-05" ixy="-4.8444933029987E-10" ixz="1.88163708851143E-08" iyy="3.11510738647764E-05" iyz="-6.9356066306907E-11" izz="1.8809969558182E-05"/>
+        </inertial>
         <visual>
             <origin rpy="-1.57 0.0 0.0" xyz="0.0 0.0 0.0"/>
             <geometry>
                 <mesh filename="package://bumperbot_description/meshes/wheel_left_link.STL"/>
             </geometry>
         </visual>
+        <collision>
+            <origin xyz="0 0.015 0.0" rpy="1.57 0.0 0.0"/>
+            <geometry>
+                <sphere radius="0.033"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="wheel_left_joint" type="continuous">
@@ -56,6 +89,12 @@
                 <mesh filename="package://bumperbot_description/meshes/caster_front_link.STL"/>
             </geometry>
         </visual>
+        <collision>
+            <origin xyz="0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <sphere radius="0.005"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="caster_front_joint" type="fixed">
@@ -72,6 +111,12 @@
                 <mesh filename="package://bumperbot_description/meshes/caster_rear_link.STL"/>
             </geometry>
         </visual>
+        <collision>
+            <origin xyz="0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <sphere radius="0.005"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="caster_rear_joint" type="fixed">
@@ -79,5 +124,20 @@
         <child link="caster_rear_link"/>   
         <origin rpy="0.0 0.0 0.0" xyz="-0.04755 0.0 -0.0275"/>
         
+    </joint>
+
+    <link name="can_link">
+        <visual>
+            <origin rpy="1.57 0.0 0.0" xyz="-0.03 0.03 0.0"/>
+            <geometry>
+                <mesh filename="package://bumperbot_description/meshes/can.STL"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <joint name="can_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="can_link"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.078"/>
     </joint>
 </robot>
