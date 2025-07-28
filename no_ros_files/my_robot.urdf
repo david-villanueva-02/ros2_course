@@ -27,26 +27,22 @@
         </visual>
     </link>
 
-    <!-- Temporal second link-->
-    <link name="second_link">
+    <!-- Right wheel-->
+    <link name="right_wheel_link">
         <visual>
-            <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/>
+            <origin xyz="0.0 0.0 0.0" rpy="1.57 0.0 0.0"/>
             <geometry>
-                <cylinder radius="0.1" length="0.2"/>
+                <cylinder radius="0.1" length="0.05"/>
             </geometry>
             <material name="grey" />
         </visual>
     </link>
 
-    <!-- Base-second joint-->
-    <joint name="base_second_joint" type="revolute"> <!--For rotations, needs limits-->
-    <!-- joint name="base_second_joint" type="prismatic" For translations, needs limits-->
-    <!-- joint name="base_second_joint" type="continuous" For wheels-->
+    <!-- Base right_Wheel joint -->
+    <joint name="base_rightwheel_joint" type="continuous">
         <parent link="base_link"/>
-        <child link="second_link"/>
-        <origin xyz="0.0 0.0 0.2" rpy="0.0 0.0 0.0"/>
-        <axis xyz="1 0 0"/>
-        <limit lower="0.0" upper="0.2" effort="100" velocity="100"/>
+        <child link="right_wheel_link"/>
+        <origin xyz="-0.15 -0.225 0.0" rpy="0.0 0.0 0.0"/>
+        <axis xyz="0.0 1.0 0.0"/>
     </joint>
-
 </robot>
