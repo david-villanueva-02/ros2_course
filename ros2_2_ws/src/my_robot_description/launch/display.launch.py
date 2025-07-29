@@ -10,7 +10,7 @@ def generate_launch_description():
     
     urdf_path = os.path.join(get_package_share_directory('my_robot_description'),
                              'urdf',
-                             'my_robot.urdf')
+                             'my_robot.urdf.xacro')
     
     robot_description = ParameterValue(Command(['xacro ', urdf_path]), 
                                        value_type=str)
