@@ -9,7 +9,8 @@
     <!-- Gazebo launch file -->
     <!-- ros2 launch ros_gz_sim gz_sim.launch.py -->
     <include file="$(find-pkg-share ros_gz_sim)/launch/gz_sim.launch.py">
-        <arg name="gz_args" value="empty.sdf -r" />
+        <!--arg name="gz_args" value="empty.sdf -r" /-->
+        <arg name="gz_args" value="$(find-pkg-share my_robot_bringup)/worlds/test_world.sdf -r" />
     </include>
     
     <!-- Create node -->
