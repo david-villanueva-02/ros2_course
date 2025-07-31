@@ -2,6 +2,7 @@
     
     <!-- Robot state publisher -->
     <let name="urdf_path" value="$(find-pkg-share my_robot_description)/urdf/my_robot.urdf.xacro" />
+    <!-- <let name="urdf_path" value="$(find-pkg-share my_robot_description)/urdf/standalone_arm.xacro" /> -->
     <node pkg="robot_state_publisher" exec="robot_state_publisher">
         <param name="robot_description" value="$(command 'xacro $(var urdf_path)')"/>
     </node>
@@ -25,6 +26,7 @@
     
     <!-- Rviz Node -->
     <let name="config_path" value="$(find-pkg-share my_robot_description)/rviz/urdf_config.rviz" />
+    <!-- <let name="config_path" value="$(find-pkg-share my_robot_description)/rviz/test_arm_config.rviz" /> -->
     <node pkg="rviz2" 
         exec="rviz2"
         output="screen"

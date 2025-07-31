@@ -7,4 +7,14 @@
     <xacro:include filename="mobile_base_gazebo.xacro"/>
     <xacro:include filename="camera.xacro"/>
 
+    <!-- Arm module -->
+    <xacro:include filename="arm_gazebo.xacro"/>
+    <xacro:include filename="arm.xacro"/>
+
+    <joint name="car_arm_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="arm_base_link"/>
+        <origin xyz="${base_length/4} 0.0 ${base_height}" rpy="0.0 0.0 ${pi/2}"/>
+    </joint>
+
 </robot>
