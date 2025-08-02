@@ -75,9 +75,9 @@ def main(args=None):
 
     # Action server call from client
     node.send_goal(10, 1.0)
-    node.send_goal(15, 1.0)
-    node.send_goal(4, 1.0)
-    node.send_goal(5, 1.0)
+    # node.send_goal(15, 1.0)
+    # node.send_goal(4, 1.0)
+    # node.send_goal(5, 1.0)
 
     rclpy.spin(node)
     rclpy.shutdown()
