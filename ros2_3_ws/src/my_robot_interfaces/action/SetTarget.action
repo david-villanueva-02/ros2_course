@@ -1,10 +1,10 @@
 # Goal
-int64 position
+float64 position
 float64 velocity
 ---
 # Result
-int64 position
+float64 position
 string message
 ---
 # Feedback
-int64 current_position
+float64 current_position

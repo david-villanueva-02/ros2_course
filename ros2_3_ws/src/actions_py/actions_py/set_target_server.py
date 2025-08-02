@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from rclpy.action import ActionServer, GoalResponse, CancelResponse
+from rclpy.action.server import ServerGoalHandle
+from my_robot_interfaces.action import SetTarget
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import ReentrantCallbackGroup
+
+from time import sleep
+import threading
+
+class SetTargetServer(Node):
+    def __init__(self):
+        super().__init__("set_target_server")
+        self.goal_handle_: ServerGoalHandle = None
+        self.goal_lock_ = threading.Lock()
+
+        self.current_position = 50 # Initial robot position
+
+        # Action server creation
+        self.set_target_server_ = ActionServer(self, 
+                                                SetTarget, 
+                                                "set_target", 
+                                                goal_callback = self.goal_callback,       # Callback to accept the goal
+                                                # handle_accepted_callback = self.handle_accepted_callback, # Handle accepted goals callback
+                                                # cancel_callback = self.cancel_callback,   # Callback to attempt cancelling the callback
+                                                execute_callback = self.execute_callback, # Callback to excecute the action
+                                                callback_group = ReentrantCallbackGroup())  # Handling multple callbacks in different threads
+        self.get_logger().info("Action server has been started")
+
+    def goal_callback(self, goal_request: SetTarget.Goal):
+        '''Callback to handle goal acceptance'''
+        self.get_logger().info("Received a goal")
+
+        # Goal Request Validation
+        if not isinstance(goal_request.position, (int, float)) or not isinstance(goal_request.velocity, (int, float)):
+            self.get_logger().warn("Wrong arguments type")
+            return GoalResponse.REJECT
+
+        if goal_request.position < 0 or goal_request.position > 100:
+            self.get_logger().info("Position out of range, rejecting goal")
+            return GoalResponse.REJECT
+        
+        if goal_request.position == self.current_position:
+            self.get_logger().info("Robot in position")
+            return GoalResponse.REJECT
+        
+        if goal_request.position < self.current_position: # Backwards
+            if goal_request.velocity > 0:
+                self.get_logger().info("Goal not reachable, rejecting goal")
+                return GoalResponse.REJECT
+
+        if goal_request.position > self.current_position: # Forward
+            if goal_request.velocity < 0:
+                self.get_logger().info("Goal not reachable, rejecting goal")
+                return GoalResponse.REJECT
+
+        # Policy: preempt existing goal when receiving a new goal
+        # with self.goal_lock_:
+        #     # A current goal in execution
+        #     if self.goal_handle_ and self.goal_handle_.is_active:
+        #         self.get_logger().info("Abort current goal and accept new goal")
+        #         self.goal_handle_.abort() # Abort current goal
+        
+        # Accept the goal request
+        self.get_logger().info("Accepting the goal")
+        return GoalResponse.ACCEPT
+    
+    def handle_accepted_callback(self, goal_handle: ServerGoalHandle):
+        '''Handle accepted goals callback'''
+        with self.goal_lock_:
+            goal_handle.execute()
+    
+    def cancel_callback(self, goal_handle: ServerGoalHandle):
+        '''Callback to handle cancel requests'''
+        self.get_logger().info("Received a cancel request")
+
+        # Cancel request may be rejected due to different functional factors
+        return CancelResponse.ACCEPT # or REJECT
+
+
+    def execute_callback(self, goal_handle: ServerGoalHandle):
+        '''Execute callback for action set_target'''
+        # with self.goal_lock_:
+            # self.goal_handle_ = goal_handle
+
+        # Get request from goal
+        position = goal_handle.request.position
+        velocity = goal_handle.request.velocity
+
+        # Execute the action 
+        self.get_logger().info("Executing the goal")
+        # feedback = SetTarget.Feedback()
+        result = SetTarget.Result()
+
+        while self.current_position != position: # Until the robot reaches the target
+            if abs(self.current_position - position) < abs(velocity):
+                step = position - self.current_position
+            else:
+                step = velocity
+
+            self.current_position += step
+            self.get_logger().info(f"Current position: {self.current_position}")
+
+            # Assuming the velocity is in m/s
+            sleep(1.0)
+
+        # Once done, set goal final state 
+        goal_handle.succeed()
+
+        # send the result
+        self.get_logger().info("Target reached")
+        result.position = self.current_position
+        result.message = "Target reached"
+
+        return result
+    
+def main(args=None):
+    rclpy.init(args=args)
+    node = SetTargetServer()
+    rclpy.spin(node, MultiThreadedExecutor())
+    rclpy.shutdown()
+
+
+if __name__ == "__main__":
+    main()
