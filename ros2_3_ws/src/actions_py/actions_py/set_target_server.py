@@ -23,8 +23,8 @@ class SetTargetServer(Node):
                                                 SetTarget, 
                                                 "set_target", 
                                                 goal_callback = self.goal_callback,       # Callback to accept the goal
-                                                # handle_accepted_callback = self.handle_accepted_callback, # Handle accepted goals callback
-                                                # cancel_callback = self.cancel_callback,   # Callback to attempt cancelling the callback
+                                                handle_accepted_callback = self.handle_accepted_callback, # Handle accepted goals callback
+                                                cancel_callback = self.cancel_callback,   # Callback to attempt cancelling the callback
                                                 execute_callback = self.execute_callback, # Callback to excecute the action
                                                 callback_group = ReentrantCallbackGroup())  # Handling multple callbacks in different threads
         self.get_logger().info("Action server has been started")
@@ -57,11 +57,11 @@ class SetTargetServer(Node):
                 return GoalResponse.REJECT
 
         # Policy: preempt existing goal when receiving a new goal
-        # with self.goal_lock_:
-        #     # A current goal in execution
-        #     if self.goal_handle_ and self.goal_handle_.is_active:
-        #         self.get_logger().info("Abort current goal and accept new goal")
-        #         self.goal_handle_.abort() # Abort current goal
+        with self.goal_lock_:
+            # A current goal in execution
+            if self.goal_handle_ and self.goal_handle_.is_active:
+                self.get_logger().info("Abort current goal and accept new goal")
+                self.goal_handle_.abort() # Abort current goal
         
         # Accept the goal request
         self.get_logger().info("Accepting the goal")
@@ -82,8 +82,8 @@ class SetTargetServer(Node):
 
     def execute_callback(self, goal_handle: ServerGoalHandle):
         '''Execute callback for action set_target'''
-        # with self.goal_lock_:
-            # self.goal_handle_ = goal_handle
+        with self.goal_lock_:
+            self.goal_handle_ = goal_handle
 
         # Get request from goal
         position = goal_handle.request.position
@@ -91,16 +91,33 @@ class SetTargetServer(Node):
 
         # Execute the action 
         self.get_logger().info("Executing the goal")
-        # feedback = SetTarget.Feedback()
+        feedback = SetTarget.Feedback()
         result = SetTarget.Result()
 
         while self.current_position != position: # Until the robot reaches the target
+            if not goal_handle.is_active: # Goal aborted
+                result.position = self.current_position
+                return result
+                
+            if goal_handle.is_cancel_requested: # Goal canceled
+                self.get_logger().info("Cancelling the goal")
+                goal_handle.canceled() # or succeed() or abort(), depending on functional factors
+                result.position = self.current_position
+                return result
+            
             if abs(self.current_position - position) < abs(velocity):
                 step = position - self.current_position
             else:
                 step = velocity
 
+            # Move
             self.current_position += step
+
+            # Publish feedback
+            feedback.current_position = self.current_position
+            goal_handle.publish_feedback(feedback)
+
+            # For debugging
             self.get_logger().info(f"Current position: {self.current_position}")
 
             # Assuming the velocity is in m/s
