@@ -25,6 +25,7 @@ class NumberPublisherNode(LifecycleNode):
         self.get_logger().info("In on_configure")
         self.number_publisher_ = self.create_lifecycle_publisher(Int64, "number", 10)
         self.number_timer_ = self.create_timer(1.0 / self.publish_frequency_, self.publish_number)
+        self.number_timer_.cancel()
 
         return TransitionCallbackReturn.SUCCESS
     
@@ -44,6 +45,7 @@ class NumberPublisherNode(LifecycleNode):
         Transition from inactive to active. 
         Activate/enable hardware and ROS2 communication
         '''
+        self.number_timer_.reset()
         self.get_logger().info("In on_activate")
 
         # Calls the original method with extra functionalities instead of overwriting it
@@ -54,6 +56,7 @@ class NumberPublisherNode(LifecycleNode):
         Transition from active to inactive
         Disable hardware and stop ROS2 communication. Opposite of on_activate
         '''
+        self.number_timer_.cancel()
         self.get_logger().info("In on_deactivate")
 
         # Calls the original method with extra functionalities instead of overwriting it
