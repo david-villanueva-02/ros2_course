@@ -90,17 +90,7 @@ class CountUntilServer(Node):
 
         for _ in range(target_number):
             # Handling cancel requests
-            if not goal_handle.is_active: # Goal aborted
-                result.reached_number = counter
-                self.process_next_goal()
-                return result
-                
-            if goal_handle.is_cancel_requested: # Goal canceled
-                self.get_logger().info("Cancelling the goal")
-                goal_handle.canceled() # or succeed() or abort(), depending on functional factors
-                result.reached_number = counter
-                self.process_next_goal()
-                return result
+
             counter += 1
             self.get_logger().info(str(counter))
 
