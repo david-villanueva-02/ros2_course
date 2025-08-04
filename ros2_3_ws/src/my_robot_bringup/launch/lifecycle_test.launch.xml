@@ -1,0 +1,12 @@
+<launch>
+    <let name="node_name" value="my_number_publisher"/>
+    
+    <!-- Lifecycle node -->
+    <node pkg="lifecycle_py" exec="number_publisher" name="$(var node_name)" />
+
+    <!-- Lifecycle node manager node -->
+    <node pkg="lifecycle_py" exec="lifecycle_node_manager" >
+        <param name="managed_node_name" value="$(var node_name)" />
+    </node>
+
+</launch>
