@@ -1,0 +1,15 @@
+<launch>
+    <!-- Declare robot names -->
+    <let name="node_name_1" value="robot1"/>
+    <let name="node_name_2" value="robot2"/>
+    <let name="node_name_3" value="robot3"/>
+    
+    <!-- Lifecycle node 1 -->
+    <node pkg="lifecycle_py" exec="set_target_server_lifecycle" name="$(var node_name_1)" />
+    <node pkg="lifecycle_py" exec="set_target_server_lifecycle" name="$(var node_name_2)" />
+    <node pkg="lifecycle_py" exec="set_target_server_lifecycle" name="$(var node_name_3)" />
+
+    <!-- Lifecycle node manager node -->
+    <node pkg="lifecycle_py" exec="robots_manager" />
+
+</launch>

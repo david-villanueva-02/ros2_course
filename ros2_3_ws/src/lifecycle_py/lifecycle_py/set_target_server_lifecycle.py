@@ -1,39 +1,90 @@
 #!/usr/bin/env python3
 import rclpy
-from rclpy.node import Node
 from rclpy.action import ActionServer, GoalResponse, CancelResponse
 from rclpy.action.server import ServerGoalHandle
 from my_robot_interfaces.action import SetTarget
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 
+from rclpy.lifecycle import LifecycleNode
+from rclpy.lifecycle.node import LifecycleState, TransitionCallbackReturn
+
 from time import sleep
 import threading
 
-class SetTargetServer(Node):
+class SetTargetServer(LifecycleNode):
     def __init__(self):
         super().__init__("set_target_server")
+
+        self.server_name = self.get_name()
+        
         self.goal_handle_: ServerGoalHandle = None
         self.goal_lock_ = threading.Lock()
 
-        self.current_position = 50 # Initial robot position
+        # Initialize atrributes
+        self.actiavted = False
+        self.current_position: float = 50.0 # Initial robot position
 
+        # Declare action 
+        self.set_target_server_ = None
+
+        self.get_logger().info("In constructor")
+
+    # ----------- Lifecycle node management ----------- 
+
+    def on_configure(self, previous_state: LifecycleState):
         # Action server creation
+        self.get_logger().info("In on_configure")
         self.set_target_server_ = ActionServer(self, 
                                                 SetTarget, 
-                                                "set_target", 
-                                                goal_callback = self.goal_callback,       # Callback to accept the goal
+                                                f"{self.server_name}/set_target", 
+                                                goal_callback = self.goal_callback,         # Callback to accept the goal
                                                 handle_accepted_callback = self.handle_accepted_callback, # Handle accepted goals callback
-                                                cancel_callback = self.cancel_callback,   # Callback to attempt cancelling the callback
-                                                execute_callback = self.execute_callback, # Callback to excecute the action
-                                                callback_group = ReentrantCallbackGroup())  # Handling multple callbacks in different threads
-        self.get_logger().info("Action server has been started")
+                                                cancel_callback = self.cancel_callback,     # Callback to attempt cancelling the callback
+                                                execute_callback = self.execute_callback,   # Callback to excecute the action
+                                                callback_group = ReentrantCallbackGroup(),  # Handling multple callbacks in different threads
+                                                )
+        return TransitionCallbackReturn.SUCCESS
+    
+    def on_cleanup(self, previous_state: LifecycleState):
+        # Action server destruction
+        self.get_logger().info("In on_cleanup")
+        self.set_target_server_.destroy()
+        return TransitionCallbackReturn.SUCCESS
+    
+    def on_activate(self, previous_state: LifecycleState):
+        self.get_logger().info("In on_activate")
+        self.actiavted = True
+        return super().on_activate(previous_state)
+    
+    def on_deactivate(self, previous_state: LifecycleState):
+        self.get_logger().info("In on_deactivate")
+        self.actiavted = False
+        # Policy: preempt existing goal when receiving a new goal
+        with self.goal_lock_:
+            # A current goal in execution
+            if self.goal_handle_ and self.goal_handle_.is_active:
+                self.get_logger().info("Abort current goal and accept new goal")
+                self.goal_handle_.abort() # Abort current goal
+
+        return super().on_deactivate(previous_state)
+    
+    def on_shutdown(self, previous_state: LifecycleState):
+        self.get_logger().info("In on_shutdown")
+        self.set_target_server_.destroy()
+        return TransitionCallbackReturn.SUCCESS
+    
+    # ---------------- Functionalities ---------------- 
 
     def goal_callback(self, goal_request: SetTarget.Goal):
         '''Callback to handle goal acceptance'''
         self.get_logger().info("Received a goal")
 
         # Goal Request Validation
+        if not self.actiavted: # Reject goal if the lifecycle node is not activated
+            self.get_logger().warn("Node inactive")
+            return GoalResponse.REJECT
+        
         if not isinstance(goal_request.position, (int, float)) or not isinstance(goal_request.velocity, (int, float)):
             self.get_logger().warn("Wrong arguments type")
             return GoalResponse.REJECT
@@ -97,6 +148,7 @@ class SetTargetServer(Node):
         while self.current_position != position: # Until the robot reaches the target
             if not goal_handle.is_active: # Goal aborted
                 result.position = self.current_position
+                result.message = "Movement aborted"
                 return result
                 
             if goal_handle.is_cancel_requested: # Goal canceled

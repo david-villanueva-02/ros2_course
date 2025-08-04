@@ -21,7 +21,10 @@ setup(
     entry_points={
         'console_scripts': [
             "number_publisher = lifecycle_py.number_publisher:main",
-            "lifecycle_node_manager = lifecycle_py.lifecycle_node_manager:main"
+            "lifecycle_node_manager = lifecycle_py.lifecycle_node_manager:main",
+            "set_target_server_lifecycle = lifecycle_py.set_target_server_lifecycle:main",
+            "set_target_client = lifecycle_py.set_target_client:main",
+            "robots_manager = lifecycle_py.robots_manager:main"
         ],
     },
 )
