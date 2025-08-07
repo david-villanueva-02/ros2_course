@@ -36,7 +36,7 @@ class SimpleController(Node):
         robot_speed = np.array([[msg.twist.linear.x],
                                 [msg.twist.angular.z]])
         
-        wheel_speed = np.multiply(np.linalg.inv(self.speed_conversion_), robot_speed)
+        wheel_speed = np.matmul(np.linalg.inv(self.speed_conversion_), robot_speed)
         
         # Set message to send to the wheels 
         wheel_speed_msg = Float64MultiArray()
